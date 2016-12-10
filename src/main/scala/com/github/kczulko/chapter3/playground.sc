@@ -13,13 +13,14 @@ implicit object EmployeeCsvEncoder extends CsvEncoder[Employee] {
   )
 }
 
-implicit object IceCreamCsvEncoder extends CsvEncoder[IceCream] {
-  override def encode(a: IceCream): List[String] = List(
-    a.name,
-    a.numCherries.toString,
-    a.inCone.toString
-  )
-}
+// old typical type class impl for IceCreamEncoder
+//implicit object IceCreamCsvEncoder extends CsvEncoder[IceCream] {
+//  override def encode(a: IceCream): List[String] = List(
+//    a.name,
+//    a.numCherries.toString,
+//    a.inCone.toString
+//  )
+//}
 
 // companion object / materializer
 object CsvEncoderMaterializer {
@@ -87,7 +88,7 @@ implicit val newIceCreamEncoder: CsvEncoder[IceCream] = {
   val gen = Generic[IceCream]
   // enc is a dual encoder based on gen.Repr which is a type of CsvEncoder[String::Int::Boolean::HNil]
   val enc = the[CsvEncoder[gen.Repr]]
-  createEncoder{ iceCream =>
+  createEncoder { iceCream =>
     // dual encoder encodes transformed instance of 'normal' iceCream by using gen val
     enc.encode(gen.to(iceCream))
   }
