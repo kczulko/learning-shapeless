@@ -1,5 +1,5 @@
 import com.github.kczulko.chapter2.adts._
-import shapeless.the
+import shapeless.{::, Generic, HList, HNil, the}
 
 trait CsvEncoder[A] {
   def encode(a: A): List[String]
@@ -59,3 +59,36 @@ case class Kczulko(bored: Boolean = true)
 import CsvEncoders._
 
 println { writeCsv(employees zip iceCreams) }
+
+//==============================================
+// deriving encoder from hlist
+//==============================================
+
+def createEncoder[A](f: A => List[String]): CsvEncoder[A] =
+  a => f(a)
+
+implicit val stringEncoder = createEncoder[String](List(_))
+implicit val intEncoder = createEncoder[Int](i => List(i.toString))
+implicit val booleanEncoder = createEncoder[Boolean](b => List(if (b) "yes" else "no"))
+implicit val hnilEncoder = createEncoder[HNil](_ => Nil)
+
+implicit def hlistEncoder[H, T <: HList](
+  implicit hEncoder: CsvEncoder[H],
+  tEncoder: CsvEncoder[T]
+): CsvEncoder[H :: T] = createEncoder {
+  case h :: t => hEncoder.encode(h) ++ tEncoder.encode(t)
+}
+
+val reprEncoder: CsvEncoder[String :: Int :: Boolean :: HNil] = implicitly
+reprEncoder.encode("Dupa" :: 2 :: true :: HNil)
+
+implicit val newIceCreamEncoder: CsvEncoder[IceCream] = {
+  // gen is a dual representation of IceCream type
+  val gen = Generic[IceCream]
+  // enc is a dual encoder based on gen.Repr which is a type of CsvEncoder[String::Int::Boolean::HNil]
+  val enc = the[CsvEncoder[gen.Repr]]
+  createEncoder{ iceCream =>
+    // dual encoder encodes transformed instance of 'normal' iceCream by using gen val
+    enc.encode(gen.to(iceCream))
+  }
+}
