@@ -1,4 +1,4 @@
-name := "shapeless-playground"
+name := "learning-shapeless"
 
 version := "1.0"
 

@@ -5,21 +5,23 @@ trait CsvEncoder[A] {
   def encode(a: A): List[String]
 }
 
-implicit object EmployeeCsvEncoder extends CsvEncoder[Employee] {
-  override def encode(a: Employee): List[String] = List(
-    a.name,
-    a.id.toString,
-    a.isManager.toString
-  )
-}
+// old type class instance for Employee to csv conversion
+//implicit object EmployeeCsvEncoder extends CsvEncoder[Employee] {
+//  override def encode(a: Employee): List[String] = List(
+//    a.name,
+//    a.id.toString,
+//    a.isManager.toString
+//  )
+//}
 
-implicit object IceCreamCsvEncoder extends CsvEncoder[IceCream] {
-  override def encode(a: IceCream): List[String] = List(
-    a.name,
-    a.numCherries.toString,
-    a.inCone.toString
-  )
-}
+// old type class instance for IceCream to csv conversion
+//implicit object IceCreamCsvEncoder extends CsvEncoder[IceCream] {
+//  override def encode(a: IceCream): List[String] = List(
+//    a.name,
+//    a.numCherries.toString,
+//    a.inCone.toString
+//  )
+//}
 
 // companion object / materializer
 object CsvEncoderMaterializer {
@@ -58,8 +60,6 @@ case class Kczulko(bored: Boolean = true)
 
 import CsvEncoders._
 
-println { writeCsv(employees zip iceCreams) }
-
 //==============================================
 // deriving encoder from hlist
 //==============================================
@@ -82,13 +82,22 @@ implicit def hlistEncoder[H, T <: HList](
 val reprEncoder: CsvEncoder[String :: Int :: Boolean :: HNil] = implicitly
 reprEncoder.encode("Dupa" :: 2 :: true :: HNil)
 
-implicit val newIceCreamEncoder: CsvEncoder[IceCream] = {
-  // gen is a dual representation of IceCream type
-  val gen = Generic[IceCream]
-  // enc is a dual encoder based on gen.Repr which is a type of CsvEncoder[String::Int::Boolean::HNil]
-  val enc = the[CsvEncoder[gen.Repr]]
-  createEncoder{ iceCream =>
-    // dual encoder encodes transformed instance of 'normal' iceCream by using gen val
-    enc.encode(gen.to(iceCream))
-  }
+// old IceCream encoder - not parameterized yet
+//
+//implicit val newIceCreamEncoder: CsvEncoder[IceCream] = {
+//  // gen is a dual representation of IceCream type
+//  val gen = Generic[IceCream]
+//  // enc is a dual encoder based on gen.Repr which is a type of CsvEncoder[String::Int::Boolean::HNil]
+//  val enc = the[CsvEncoder[gen.Repr]]
+//  createEncoder { iceCream =>
+//    // dual encoder encodes transformed instance of 'normal' iceCream by using gen val
+//    enc.encode(gen.to(iceCream))
+//  }
+//}
+
+implicit def genericEncoder[A, B](implicit gen: Generic[A] { type Repr = B }, enc: CsvEncoder[B]) = {
+  createEncoder { item: A => enc.encode(gen.to(item)) }
 }
+
+println { writeCsv(iceCreams) }
+println { writeCsv(employees zip iceCreams) }
