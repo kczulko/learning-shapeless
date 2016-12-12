@@ -1,0 +1,1 @@
+val number: 42 = 42
