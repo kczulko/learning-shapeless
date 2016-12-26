@@ -27,7 +27,6 @@ implicit def hlistPenultimate[L <: HList, M <: HList, O](
   }
 
 type BigList = String :: Int :: Boolean :: Double :: HNil
-
 val bigLst: BigList = "foo" :: 2 :: true :: 3.2 :: HNil
 
 Penultimate[BigList].apply(bigLst)
@@ -108,7 +107,7 @@ Common <: HList, Added <: HList, Unaligned <: HList
     align(
       prepend(
         inter(aGen.to(a)),
-          monoid.empty
+        monoid.empty
       )
     )
   )

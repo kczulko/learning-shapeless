@@ -1,4 +1,4 @@
-import shapeless.ops.hlist.{IsHCons, Last}
+import shapeless.ops.hlist.{Init, IsHCons, Last, Reverse}
 import shapeless.{::, Generic, HList, HNil}
 
 def getRepr[A](value: A)(implicit gen: Generic[A]): gen.Repr =
